@@ -1,0 +1,283 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-bg: #1a1a2e;
+    --secondary-bg: #16213e;
+    --accent: #e94560;
+    --text: #f1f1f1;
+    --success: #2ecc71;
+    --warning: #f39c12;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--primary-bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Header */
+#game-header {
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem;
+    background: var(--secondary-bg);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Main Container */
+#game-container {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Buttons */
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    min-width: 200px;
+    min-height: 44px;
+    touch-action: manipulation;
+    transition: transform 0.2s;
+}
+
+.btn-primary:active {
+    transform: scale(0.95);
+}
+
+/* Crime Scene (Puzzle 1) */
+#crime-scene {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.hotspot {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(233, 69, 96, 0.3);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.hotspot:hover {
+    background: rgba(233, 69, 96, 0.6);
+    transform: scale(1.1);
+}
+
+.hotspot.found {
+    background: rgba(46, 204, 113, 0.5);
+    border-color: var(--success);
+}
+
+/* Evidence Cards (Puzzle 2) */
+.evidence-card {
+    background: var(--secondary-bg);
+    padding: 1rem;
+    margin: 0.5rem;
+    border-radius: 8px;
+    cursor: move;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+}
+
+.timeline-slot {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    margin: 0.5rem;
+    border: 2px dashed var(--text);
+    border-radius: 8px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-slot.filled {
+    border-color: var(--success);
+    border-style: solid;
+}
+
+/* Code Input (Puzzle 3) */
+#code-input {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.code-digit {
+    width: 60px;
+    height: 80px;
+    font-size: 2rem;
+    text-align: center;
+    background: var(--secondary-bg);
+    color: var(--text);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+}
+
+.code-digit.correct {
+    border-color: var(--success);
+    background: rgba(46, 204, 113, 0.2);
+}
+
+.code-digit.incorrect {
+    border-color: var(--accent);
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+/* Suspects (Puzzle 4) */
+#suspects {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.suspect-card {
+    background: var(--secondary-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.suspect-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-5px);
+}
+
+/* Inventory */
+#inventory {
+    background: var(--secondary-bg);
+    padding: 1rem;
+    border-top: 2px solid var(--accent);
+}
+
+#inventory-items {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+}
+
+.inventory-item {
+    min-width: 60px;
+    height: 60px;
+    background: var(--primary-bg);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--secondary-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    #game-header {
+        font-size: 1rem;
+        padding: 0.5rem;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    #code-input {
+        gap: 0.5rem;
+    }
+    
+    .code-digit {
+        width: 50px;
+        height: 70px;
+        font-size: 1.5rem;
+    }
+}
+
+/* Made with Bob */
