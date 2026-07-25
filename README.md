@@ -218,30 +218,6 @@ Contributions welcome! This is a complete game but can be enhanced.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👤 Author
-
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Built with React, Tailwind CSS, and Web Audio API
-
-## 🙏 Acknowledgments
-
-- React team for the amazing library
-- Tailwind CSS for utility-first styling
-- Web Audio API for procedural sound generation
-- Inspired by classic detective games and escape rooms
-
-## 📞 Support
-
-Having issues? Found a bug?
-- Open an issue on GitHub
-- Check browser console for errors
-- Ensure Web Audio API is supported in your browser
-
 ## 🎓 Learning Resources
 
 This project demonstrates:
