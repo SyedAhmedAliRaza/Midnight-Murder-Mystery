@@ -29,9 +29,6 @@ You're a detective investigating a murder at a crime scene desk. With only 5 min
 
 ## 🚀 Quick Start
 
-### Play Online
-Visit: [Your Deployed URL Here]
-
 ### Run Locally
 
 1. Clone the repository:
