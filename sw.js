@@ -21,4 +21,3 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Made with Bob

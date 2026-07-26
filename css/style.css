@@ -1,4 +1,4 @@
-/* Reset and Base Styles */
+
 * {
     margin: 0;
     padding: 0;
@@ -25,7 +25,6 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Header */
 #game-header {
     display: flex;
     justify-content: space-around;
@@ -35,14 +34,12 @@ body {
     font-weight: bold;
 }
 
-/* Main Container */
 #game-container {
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
 }
 
-/* Screen Management */
 .screen {
     display: none;
     animation: fadeIn 0.3s ease-in;
@@ -57,7 +54,6 @@ body {
     to { opacity: 1; }
 }
 
-/* Buttons */
 .btn-primary {
     background: var(--accent);
     color: white;
@@ -76,7 +72,6 @@ body {
     transform: scale(0.95);
 }
 
-/* Crime Scene (Puzzle 1) */
 #crime-scene {
     position: relative;
     width: 100%;
@@ -107,7 +102,6 @@ body {
     border-color: var(--success);
 }
 
-/* Evidence Cards (Puzzle 2) */
 .evidence-card {
     background: var(--secondary-bg);
     padding: 1rem;
@@ -138,7 +132,6 @@ body {
     border-style: solid;
 }
 
-/* Code Input (Puzzle 3) */
 #code-input {
     display: flex;
     gap: 1rem;
@@ -173,7 +166,6 @@ body {
     75% { transform: translateX(10px); }
 }
 
-/* Suspects (Puzzle 4) */
 #suspects {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -195,7 +187,6 @@ body {
     transform: translateY(-5px);
 }
 
-/* Inventory */
 #inventory {
     background: var(--secondary-bg);
     padding: 1rem;
@@ -221,7 +212,6 @@ body {
     font-size: 1.5rem;
 }
 
-/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -257,22 +247,21 @@ body {
     cursor: pointer;
 }
 
-/* Mobile Optimizations */
 @media (max-width: 768px) {
     #game-header {
         font-size: 1rem;
         padding: 0.5rem;
     }
-    
+
     .btn-primary {
         width: 100%;
         max-width: 300px;
     }
-    
+
     #code-input {
         gap: 0.5rem;
     }
-    
+
     .code-digit {
         width: 50px;
         height: 70px;
@@ -280,4 +269,3 @@ body {
     }
 }
 
-/* Made with Bob */

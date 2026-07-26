@@ -1,9 +1,5 @@
 const { useState, useEffect, useRef } = React;
 
-// ============================================
-// AUDIO SYSTEM - Web Audio API Implementation
-// ============================================
-
 class AudioSystem {
   constructor() {
     this.audioContext = null;
@@ -12,7 +8,6 @@ class AudioSystem {
     this.backgroundGainNode = null;
   }
 
-  // Initialize AudioContext lazily on first user interaction
   initAudioContext() {
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -21,168 +16,149 @@ class AudioSystem {
     return this.audioContext;
   }
 
-  // Toggle mute/unmute
   toggleMute() {
     if (!this.audioContext) return;
-    
+
     this.isMuted = !this.isMuted;
-    
+
     if (this.isMuted) {
       this.audioContext.suspend();
     } else {
       this.audioContext.resume();
     }
-    
+
     return this.isMuted;
   }
 
-  // A. Background Drone - Scary & Thrilling
   playBackgroundDrone() {
     const ctx = this.initAudioContext();
-    
-    // Stop existing drone if playing
+
     if (this.backgroundDroneNode) {
       this.stopBackgroundDrone();
     }
 
-    // Create two oscillators for beating effect
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
-    
-    // Low-frequency oscillators
+
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(45, ctx.currentTime);
-    
+
     osc2.type = 'sawtooth';
     osc2.frequency.setValueAtTime(48, ctx.currentTime);
 
-    // Create lowpass filter for deep, heavy sound
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.setValueAtTime(150, ctx.currentTime);
     filter.Q.setValueAtTime(1, ctx.currentTime);
 
-    // Create gain node for volume control
     const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0.15, ctx.currentTime); // Keep it subtle but present
+    gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
 
-    // Connect the audio graph
     osc1.connect(filter);
     osc2.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(ctx.destination);
 
-    // Start oscillators
     osc1.start();
     osc2.start();
 
-    // Store references for cleanup
     this.backgroundDroneNode = { osc1, osc2, filter };
     this.backgroundGainNode = gainNode;
   }
 
-  // Stop background drone
   stopBackgroundDrone() {
     if (this.backgroundDroneNode) {
       try {
         this.backgroundDroneNode.osc1.stop();
         this.backgroundDroneNode.osc2.stop();
       } catch (e) {
-        // Already stopped
       }
       this.backgroundDroneNode = null;
       this.backgroundGainNode = null;
     }
   }
 
-  // B. Click Sound - Tactile Interaction
   playClickSound() {
     const ctx = this.initAudioContext();
-    
+
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
-    
+
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(800, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.05);
-    
+
     gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-    
+
     osc.connect(gainNode);
     gainNode.connect(ctx.destination);
-    
+
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.05);
   }
 
-  // C. Error Sound - Screen Shake Rumble
   playErrorSound() {
     const ctx = this.initAudioContext();
-    
+
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
-    
+
     osc.type = 'square';
     osc.frequency.setValueAtTime(80, ctx.currentTime);
-    
+
     gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-    
+
     osc.connect(gainNode);
     gainNode.connect(ctx.destination);
-    
+
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.4);
   }
 
-  // D. Success Sound - Unlocked Chime
   playSuccessSound() {
     const ctx = this.initAudioContext();
-    
-    // First note: C5 (523.25 Hz)
+
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
-    
+
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
-    
+
     gain1.gain.setValueAtTime(0.3, ctx.currentTime);
     gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-    
+
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
-    
+
     osc1.start(ctx.currentTime);
     osc1.stop(ctx.currentTime + 0.5);
-    
-    // Second note: E5 (659.25 Hz) - delayed by 0.1s
+
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
-    
+
     osc2.type = 'sine';
     osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
-    
+
     gain2.gain.setValueAtTime(0, ctx.currentTime);
     gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.1);
     gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-    
+
     osc2.connect(gain2);
     gain2.connect(ctx.destination);
-    
+
     osc2.start(ctx.currentTime + 0.1);
     osc2.stop(ctx.currentTime + 0.6);
   }
 }
 
-// Create global audio system instance
 const audioSystem = new AudioSystem();
 
-// Main Game Component
 function EscapeRoomGame() {
   const [gameState, setGameState] = useState({
     inventory: [],
-    selectedItems: [], // For deduction combine feature (max 2)
+    selectedItems: [],
     mugMoved: false,
     flashlightActive: true,
     flashlightPos: { x: 5, y: 5 },
@@ -212,47 +188,42 @@ function EscapeRoomGame() {
   const [gameStarted, setGameStarted] = useState(false);
   const workspaceRef = useRef(null);
 
-  // Initialize audio on first interaction (Start Game)
   const handleStartGame = () => {
     setGameStarted(true);
     audioSystem.playBackgroundDrone();
   };
 
-  // Toggle mute/unmute
   const handleToggleMute = () => {
     const newMuteState = audioSystem.toggleMute();
     setIsMuted(newMuteState);
     audioSystem.playClickSound();
   };
 
-  // Stop background drone when game ends
   useEffect(() => {
     if (gameState.activeView === 'victory' || gameState.activeView === 'game_over') {
       audioSystem.stopBackgroundDrone();
     }
   }, [gameState.activeView]);
 
-  // Timer countdown with corrupt cop event
   useEffect(() => {
     if (gameState.activeView === 'victory' || gameState.activeView === 'game_over') return;
-    
+
     const interval = setInterval(() => {
       setGameState(prev => {
         const newTimer = prev.timer - (prev.isHiding ? 2 : 1);
-        
-        // Trigger corrupt cop event at 2 minutes
+
         if (newTimer === 120 && !prev.corruptCopEventTriggered) {
           setShowHidePrompt(true);
           setHideTimer(3);
           return { ...prev, timer: newTimer, corruptCopEventTriggered: true };
         }
-        
+
         if (newTimer <= 0) {
           clearInterval(interval);
           audioSystem.stopBackgroundDrone();
           return { ...prev, timer: 0, activeView: 'game_over', accusationResult: 'timeout' };
         }
-        
+
         return { ...prev, timer: newTimer };
       });
     }, 1000);
@@ -260,10 +231,9 @@ function EscapeRoomGame() {
     return () => clearInterval(interval);
   }, [gameState.activeView, gameState.isHiding]);
 
-  // Hide countdown timer
   useEffect(() => {
     if (!showHidePrompt || hideTimer <= 0) return;
-    
+
     const timeout = setTimeout(() => {
       setHideTimer(prev => {
         if (prev <= 1) {
@@ -278,29 +248,28 @@ function EscapeRoomGame() {
     return () => clearTimeout(timeout);
   }, [showHidePrompt, hideTimer]);
 
-  // Flashlight tracking
   const handleMouseMove = (e) => {
     if (!gameState.flashlightActive || gameState.activeView !== 'main') return;
-    
+
     const rect = workspaceRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
+
     setGameState(prev => ({ ...prev, flashlightPos: { x, y } }));
   };
 
   const handleTouchMove = (e) => {
     if (!gameState.flashlightActive || gameState.activeView !== 'main') return;
-    
+
     const touch = e.touches[0];
     const rect = workspaceRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const x = ((touch.clientX - rect.left) / rect.width) * 100;
     const y = ((touch.clientY - rect.top) / rect.height) * 100;
-    
+
     setGameState(prev => ({ ...prev, flashlightPos: { x, y } }));
   };
 
@@ -315,7 +284,6 @@ function EscapeRoomGame() {
     setTimeout(() => setShowToast(null), duration);
   };
 
-  // Coffee mug interaction
   const handleMugClick = () => {
     audioSystem.playClickSound();
     if (!gameState.mugMoved) {
@@ -324,7 +292,6 @@ function EscapeRoomGame() {
     }
   };
 
-  // Fragment A (bottom corner)
   const handleFragmentAClick = () => {
     audioSystem.playClickSound();
     if (!gameState.fragmentAFound) {
@@ -337,7 +304,6 @@ function EscapeRoomGame() {
     }
   };
 
-  // Desk engraving
   const handleDeskEngravingClick = () => {
     audioSystem.playClickSound();
     if (!gameState.deskEngravingFound) {
@@ -346,7 +312,6 @@ function EscapeRoomGame() {
     }
   };
 
-  // Floorboard interaction
   const handleFloorboardClick = () => {
     audioSystem.playClickSound();
     if (!gameState.floorboardChecked) {
@@ -359,17 +324,16 @@ function EscapeRoomGame() {
     }
   };
 
-  // Combine evidence
   const handleCombineEvidence = () => {
     audioSystem.playClickSound();
     if (gameState.selectedItems.length !== 2) {
       showToastMessage('⚠️ Select exactly 2 evidence items to combine');
       return;
     }
-    
+
     const hasLeft = gameState.selectedItems.includes('torn_photo_left');
     const hasRight = gameState.selectedItems.includes('torn_photo_right');
-    
+
     if (hasLeft && hasRight) {
       audioSystem.playSuccessSound();
       setGameState(prev => ({
@@ -386,7 +350,6 @@ function EscapeRoomGame() {
     }
   };
 
-  // Inventory selection
   const toggleInventorySelection = (item) => {
     audioSystem.playClickSound();
     setGameState(prev => {
@@ -400,13 +363,11 @@ function EscapeRoomGame() {
     });
   };
 
-  // Drawer interaction
   const handleDrawerClick = () => {
     audioSystem.playClickSound();
     setGameState(prev => ({ ...prev, activeView: 'drawer_zoom' }));
   };
 
-  // Check drawer code
   const checkDrawerCode = () => {
     const code = drawerCode.join('');
     if (code === '420') {
@@ -427,7 +388,6 @@ function EscapeRoomGame() {
     }
   };
 
-  // Phone interaction
   const handlePhoneClick = () => {
     audioSystem.playClickSound();
     if (gameState.inventory.includes('encrypted_phone')) {
@@ -438,17 +398,14 @@ function EscapeRoomGame() {
     }
   };
 
-  // Check phone code
   const checkPhoneCode = () => {
     const code = phoneCode.join('');
-    
-    // Red herring punishment
+
     if (code === '9999') {
       audioSystem.playErrorSound();
       setGameState(prev => ({ ...prev, timer: Math.max(0, prev.timer - 60) }));
       setPhoneCode(['', '', '', '']);
       showToastMessage('⚠️ WRONG! Red herring trap! -60 seconds penalty!', 4000);
-      // Trigger screen shake
       document.querySelector('.mobile-frame')?.classList.add('animate-shake');
       setTimeout(() => {
         document.querySelector('.mobile-frame')?.classList.remove('animate-shake');
@@ -456,8 +413,7 @@ function EscapeRoomGame() {
       document.getElementById('phone-code-0')?.focus();
       return;
     }
-    
-    // Correct code: 24 × 67 = 1608
+
     if (code === '1608') {
       audioSystem.playSuccessSound();
       setGameState(prev => ({ ...prev, phoneUnlocked: true, activeView: 'suspect_lineup' }));
@@ -471,19 +427,17 @@ function EscapeRoomGame() {
     }
   };
 
-  // Hide action
   const handleHide = () => {
     audioSystem.playClickSound();
     setShowHidePrompt(false);
     setGameState(prev => ({ ...prev, isHiding: true }));
-    
+
     setTimeout(() => {
       setGameState(prev => ({ ...prev, isHiding: false }));
       showToastMessage('✅ Safe! The corrupt cop left. Continue investigating!', 4000);
     }, 10000);
   };
 
-  // Suspect accusation
   const handleAccusation = (suspect) => {
     audioSystem.playClickSound();
     if (suspect === 'elena') {
@@ -497,20 +451,17 @@ function EscapeRoomGame() {
     }
   };
 
-  // View logbook
   const handleLogbookClick = () => {
     audioSystem.playClickSound();
     setGameState(prev => ({ ...prev, logbookRead: true }));
     showToastMessage('📖 Logbook: "The killer deleted everything except my birth coordinates: 24°N, 67°E"', 6000);
   };
 
-  // View reconstructed photo
   const handlePhotoClick = () => {
     audioSystem.playClickSound();
     showToastMessage('📷 Crime Photo: Timestamp shows 04:20 AM. Location coordinates visible in corner.', 5000);
   };
 
-  // Show start screen if game hasn't started
   if (!gameStarted) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 select-none touch-manipulation">
@@ -538,10 +489,8 @@ function EscapeRoomGame() {
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 select-none touch-manipulation">
-      {/* Mobile Frame Container */}
       <div className="mobile-frame w-full max-w-md h-[844px] bg-zinc-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative">
-        
-        {/* Status Bar */}
+
         <div className="bg-zinc-950 px-6 py-3 flex justify-between items-center text-xs text-zinc-400 border-b border-zinc-800">
           <div className="flex items-center gap-2">
             <span>📱</span>
@@ -562,7 +511,6 @@ function EscapeRoomGame() {
           </div>
         </div>
 
-        {/* Main Content Area */}
         <div className="flex-1 overflow-hidden relative bg-zinc-900">
           {gameState.activeView === 'main' && (
             <MainDeskView
@@ -612,7 +560,6 @@ function EscapeRoomGame() {
             <GameOverView result={gameState.accusationResult} />
           )}
 
-          {/* Hiding Screen */}
           {gameState.isHiding && (
             <div className="absolute inset-0 bg-black z-50 flex items-center justify-center fade-in">
               <div className="text-center">
@@ -624,7 +571,6 @@ function EscapeRoomGame() {
           )}
         </div>
 
-        {/* Evidence Bag Inventory */}
         <div className="bg-zinc-950 border-t-2 border-amber-600 px-4 py-3">
           <div className="flex justify-between items-center mb-2">
             <div className="text-amber-500 text-xs font-bold tracking-wider">EVIDENCE BAG</div>
@@ -656,7 +602,7 @@ function EscapeRoomGame() {
                   }`}
                 >
                   <span>
-                    {item === 'torn_photo_left' ? '📷' : 
+                    {item === 'torn_photo_left' ? '📷' :
                      item === 'torn_photo_right' ? '📷' :
                      item === 'reconstructed_photo' ? '🖼️' :
                      item === 'encrypted_phone' ? '📱' :
@@ -675,14 +621,12 @@ function EscapeRoomGame() {
           </div>
         </div>
 
-        {/* Toast Notification */}
         {showToast && (
           <div className="absolute top-20 left-4 right-4 bg-zinc-800 border-2 border-amber-500 rounded-lg p-4 shadow-xl fade-in z-50">
             <p className="text-amber-100 text-sm">{showToast}</p>
           </div>
         )}
 
-        {/* Corrupt Cop Emergency Prompt */}
         {showHidePrompt && (
           <div className="absolute inset-0 bg-red-950 bg-opacity-95 z-50 flex items-center justify-center fade-in animate-pulse">
             <div className="text-center p-6">
@@ -704,21 +648,18 @@ function EscapeRoomGame() {
   );
 }
 
-// Main Desk View Component with Flashlight
 function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFragmentAClick, onDeskEngravingClick, onFloorboardClick, onMouseMove, onTouchMove, workspaceRef }) {
   return (
-    <div 
+    <div
       ref={workspaceRef}
       onMouseMove={onMouseMove}
       onTouchMove={onTouchMove}
       className="h-full relative overflow-hidden"
     >
-      {/* Dark Background */}
       <div className="absolute inset-0 bg-zinc-950"></div>
 
-      {/* Flashlight Overlay */}
       {gameState.flashlightActive && (
-        <div 
+        <div
           className="absolute inset-0 pointer-events-none z-10"
           style={{
             background: `radial-gradient(circle 150px at ${gameState.flashlightPos.x}% ${gameState.flashlightPos.y}%, transparent 0%, rgba(0,0,0,0.95) 100%)`
@@ -726,7 +667,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
         ></div>
       )}
 
-      {/* Content */}
       <div className="relative z-20 h-full p-6 fade-in">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-amber-500 mb-2">🕵️ DETECTIVE'S DESK</h1>
@@ -734,7 +674,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
         </div>
 
         <div className="space-y-4">
-          {/* Coffee Mug */}
           <button
             onClick={onMugClick}
             className={`w-full p-6 rounded-xl border-2 transition-all ${
@@ -754,7 +693,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
             </div>
           </button>
 
-          {/* Desk Drawer */}
           <button
             onClick={onDrawerClick}
             className="w-full p-6 rounded-xl border-2 bg-zinc-800 border-amber-600 hover:bg-zinc-750 hover:border-amber-500 hover:scale-105 transition-all"
@@ -772,7 +710,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
             </div>
           </button>
 
-          {/* Victim's Phone (only if in inventory) */}
           {gameState.inventory.includes('encrypted_phone') && (
             <button
               onClick={onPhoneClick}
@@ -788,7 +725,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
             </button>
           )}
 
-          {/* Desk Engraving */}
           {!gameState.deskEngravingFound && (
             <button
               onClick={onDeskEngravingClick}
@@ -804,7 +740,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
             </button>
           )}
 
-          {/* Fragment A (bottom corner) */}
           {!gameState.fragmentAFound && (
             <button
               onClick={onFragmentAClick}
@@ -820,7 +755,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
             </button>
           )}
 
-          {/* Loose Floorboard */}
           {!gameState.floorboardChecked && (
             <button
               onClick={onFloorboardClick}
@@ -841,7 +775,6 @@ function MainDeskView({ gameState, onMugClick, onDrawerClick, onPhoneClick, onFr
   );
 }
 
-// Drawer Zoom View
 function DrawerZoomView({ gameState, drawerCode, setDrawerCode, onCheckCode, onBack, onLogbookClick }) {
   const handleCodeInput = (index, value) => {
     if (value.length > 1) value = value.slice(-1);
@@ -876,7 +809,7 @@ function DrawerZoomView({ gameState, drawerCode, setDrawerCode, onCheckCode, onB
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-amber-500 mb-6">📂 Drawer Contents</h2>
-            
+
             <div className="space-y-4">
               <div className="bg-zinc-800 border-2 border-green-600 rounded-xl p-6">
                 <div className="text-6xl mb-4">📱</div>
@@ -943,7 +876,6 @@ function DrawerZoomView({ gameState, drawerCode, setDrawerCode, onCheckCode, onB
   );
 }
 
-// Phone Zoom View
 function PhoneZoomView({ gameState, phoneCode, setPhoneCode, onCheckCode, onBack }) {
   const handleCodeInput = (index, value) => {
     if (value.length > 1) value = value.slice(-1);
@@ -1011,7 +943,6 @@ function PhoneZoomView({ gameState, phoneCode, setPhoneCode, onCheckCode, onBack
   );
 }
 
-// Suspect Lineup View
 function SuspectLineupView({ onAccusation }) {
   const suspects = [
     {
@@ -1055,8 +986,8 @@ function SuspectLineupView({ onAccusation }) {
             className="w-full bg-zinc-800 border-2 border-amber-600 hover:border-amber-400 hover:bg-zinc-750 rounded-xl p-4 transition-all hover:scale-105"
           >
             <div className="flex gap-4">
-              <img 
-                src={suspect.image} 
+              <img
+                src={suspect.image}
                 alt={suspect.name}
                 className="w-20 h-20 rounded-lg object-cover border-2 border-zinc-700"
               />
@@ -1076,7 +1007,6 @@ function SuspectLineupView({ onAccusation }) {
   );
 }
 
-// Victory View
 function VictoryView({ timer }) {
   return (
     <div className="h-full bg-gradient-to-br from-green-900 via-zinc-900 to-zinc-950 p-6 fade-in flex flex-col items-center justify-center">
@@ -1106,7 +1036,6 @@ function VictoryView({ timer }) {
   );
 }
 
-// Game Over View
 function GameOverView({ result }) {
   const messages = {
     timeout: {
@@ -1151,8 +1080,6 @@ function GameOverView({ result }) {
   );
 }
 
-// Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<EscapeRoomGame />);
 
-// Made with Bob
